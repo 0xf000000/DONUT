@@ -1,50 +1,72 @@
 #include <stdio.h>
-#include <Math.h>
-
+#include <math.h>
+#include <stdlib.h>
 // this Programm will be the ground skelleton for a Donut printing progranmm
 
-void renderFrame(float A, float B); 
+int printDonut(float A, float B); 
 
-int main(void){
- 
+int main(int argc, char** argv){
 
+    float A = 0, B =0;
+    while(1){
+        printDonut(A,B);
+
+        A -= 0.0009;
+        B -= 0.0005;
+
+    }
 
     // 1920 x 1080 
-   renderFrame(0,0);
+  
 
     return 0;
 }
 
-void renderFrame(float A, float B){
-    const int screenWidth = 1920; 
-    const int screenHeight = 1080; 
+ const int screenWidth = 50; 
+    const int screenHeight = 50; 
+   
     const float theta_spacing= 0.07; 
     const float phi_spacing= 0.02;
     const float R1= 1; 
     const float R2 =2; 
     const float K2 = 5;
-    const float K1 = 1920 *K2*3/((R1 + R2));
-    const char characters[12] = ".,-~:;=!*#$@";
+    const float K1 = screenWidth*K2*3/(8*(R1+R2));
+ 
 
+int printDonut(float A, float B){
+
+   
 
 
     float cosA = cos(A), sinA = sin(A); 
     float cosB = cos(B), sinB = sin(B);
 
-    // fill array with ' ' 
-    char output[screenWidth][screenHeight];
+     char** output = (char**) malloc(screenWidth * sizeof(char*));
 
-    for(int O = 0; O < screenWidth -1; O++){
-        for(int Q = 0;  Q < screenHeight - 1; Q++){
-            output[O][Q] = ' ';
+     for (int i = 0; i < screenWidth; i++){
+        output[i] = (char*)malloc(screenHeight * sizeof(char));
+     }
+       
+        float** zbuffer = (float**) malloc(screenWidth * sizeof(float*));
+
+     for (int i = 0; i < screenWidth; i++){
+        zbuffer[i] = (float*)malloc(screenHeight * sizeof(float));
+     }
+
+    // fill array with ' ' 
+    
+
+    for(int i = 0; i < screenWidth; i++){
+        for(int j = 0;  j < screenHeight; j++){
+            output[i][j] = ' ';
         }
     }
 
     // fill zbuffer with 0 
-    float zbuffer[screenWidth][screenHeight];
-    for(int W = 0; W < screenWidth -1; W++){
-        for(int D = 0;  D < screenHeight - 1; D++){
-            zbuffer[W][D] = 0;
+    
+    for(int i = 0; i < screenWidth; i++){
+        for(int j = 0;  j < screenHeight ; j++){
+            zbuffer[i][j] = 0;
         }
     }
 
@@ -71,10 +93,10 @@ for(float theta=0; theta < 2* M_PI; theta += theta_spacing){
         float y = circleX * (sinB*cosPhi-sinA*cosB*sinPhi) + circleY*cosA*cosB; 
         float z = K2 + cosA * circleX* sinPhi + circleY * sinA;
         float ooz = 1/z; // "one over z"
-
         // the x and y projection on the screen
+
         int xp = (int) (screenWidth/2 + K1 *ooz *x); 
-        int yp = (int) (screenHeight/2 - K1 * ooz *z); 
+        int yp = (int) (screenHeight/2 - K1 * ooz *y); 
 
         // calculate luminace so this will decide which pixel we will see
         float L = cosPhi * cosTheta*sinB - cosA*cosTheta*sinPhi - sinA * sinTheta + cosB * (cosA* sinTheta - cosTheta * sinA * sinPhi);
@@ -84,27 +106,33 @@ for(float theta=0; theta < 2* M_PI; theta += theta_spacing){
 
         if(L > 0  ){
 
+           
+            
+        
             if(ooz > zbuffer[xp][yp]){
+                
                 zbuffer[xp][yp] = ooz;
                 int luminance_index = L*8;
-                output[xp][yp] = characters[luminance_index]; 
+                output[xp][yp] = ".,-~:;=!*#$@"[luminance_index]; 
 
             }
+       
+
         }
     }
 }
 
 printf("\x1b[H");
 for(int j = 0; j< screenHeight; j++ ){
-    for(int i=0; j < screenWidth; i++){
+    for(int i=0; i < screenWidth; i++){
 
-        printf("?=");
+       
         putchar(output[i][j]);
     }
     putchar('\n');
 }
 
-
+return 0;
 }
 
 
